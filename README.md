@@ -10,6 +10,49 @@ The diabetes dataset has a total of 768 samples,  268 of which have positive lab
 
 Now we do the random guess classifier analysis. If we are using a random guess classifier, then we will get AUROC = 0.5, AUPRC = 0.35, accuracy less than 0.65. 
 
+### Useful codes
+
+The codes from Sheryl that can generate ROC curve, PRC curve, AUROC, AUPRC, accuracy with best ROC threshold, and save figures as well as give out a numeric report, can be modified from the following:
+
+```python
+knn = KNeighborsClassifier(16)
+knn.fit(X_train,y_train)
+from sklearn.metrics import roc_curve
+y_pred_proba =knn.predict_proba(X_test)[:,1]
+fpr, tpr, thresholds = roc_curve(y_test, y_pred_proba)
+#Area under ROC curve
+from sklearn.metrics import roc_auc_score
+auroc = roc_auc_score(y_test,y_pred_proba)
+plt.plot([0,1],[0,1],'k--')
+plt.plot(fpr,tpr, label='logistic')
+plt.xlabel('fpr')
+plt.ylabel('tpr')
+title_name = 'KNN with K = 16 ROC curve, AUROC ='+str(auroc)
+plt.title(title_name)
+plt.savefig('KNN with K = 16 ROC curve.png')
+plt.show()
+print('AUROC = ',auroc)
+from sklearn.metrics import precision_recall_curve
+precision, recall, thresholds = precision_recall_curve(y_test,y_pred_proba)
+from sklearn.metrics import auc
+auprc = auc(recall, precision)
+plt.plot([1,0],[0,1],'k--')
+plt.plot(recall,precision, label='logistic')
+plt.xlabel('recall')
+plt.ylabel('precision')
+title_name = 'logistic regression PRC curve, AUPRC ='+str(auprc)
+plt.title(title_name)
+plt.savefig('KNN with K = 16 PRC curve.png')
+plt.show()
+print('AUPRC = ',auprc)
+threshold = Find_Optimal_Cutoff(y_test,y_pred_proba)
+from sklearn.metrics import accuracy_score
+y_pred = y_pred_proba>threshold
+accuracy = accuracy_score(y_test, y_pred)
+
+# report of scores
+print('AUROC = ',auroc,', AUPRC = ',auprc,'. Best threshold for ROC = ',threshold[0], ', accuracy is then ',accuracy,'.')
+```
 ### KNN with K = 16
 
 The first classifier is KNN with K = 11.The corresponding jupyter notebook file is pima-diabetes-using-logistic-and-knn-84.ipynb. The file edited by Sheryl is pima-diabetes-using-logistic-and-knn-84-Sheryl1020.ipynb, adding PRC curve and AUPRC,  best threshold for ROC, average accuracy, as well as the average precision score.
@@ -22,7 +65,7 @@ The scores from the KNN with K = 16 classifier are: AUROC =  0.8721719457013575 
 <p align="center">
   <img src="diabetes/KNN with K = 16 ROC curve.png" width="350" alt="accessibility text">
 </p>
-	
+
 ​	A visual result for the PRC curve for the KNN classifier  is given in the following figure.
 
 <p align="center">
