@@ -164,7 +164,62 @@ The scores from this classifier are: AUROC =  0.8404494382022472 , AUPRC =  0.70
   <img src="diabetes/LDA PRC curve.png" width="350" alt="accessibility text">
 </p>
 
+### More Classifiers to Compare
+The file edited by Sheryl called a-complete-ml-work-84-roc-auc-Sheryl1020.ipynb contains a comparison for 7 different classifiers and their AUROC, Average Precision(simiar but not the same as AUPRC), Accuracy, with cross validation. The corresponding code is the following:
+```python
+# added by Sheryl, more classifiers
+#scoring =  'accuracy'
+seed=7
+models = [] # Here I will append all the algorithms that I will use. Each one will run in all the created datasets.
+models.append(('LR', LogisticRegression())) 
+models.append(('LDA', LinearDiscriminantAnalysis()))
+models.append(('KNN', KNeighborsClassifier()))
+models.append(('CART', DecisionTreeClassifier()))
+models.append(('NB', GaussianNB()))
+models.append(('RF', RandomForestClassifier()))
+#models.append(('SVM', SVC()))
+models.append(('AdaBoost', AdaBoostClassifier()))
 
+#print("evaluation metric: " + scoring)    
+results_accuracy=[]
+results_auroc=[]
+results_average_precision=[]
+results_neg_log_loss=[]
+names=[]
+scores_table = np.zeros([7,4])
+i = 0 # looping index
+for name, model in models:
+        kfold = model_selection.KFold(n_splits=10, random_state=seed)
+        cv_results_accuracy = model_selection.cross_val_score(model,X, y, cv=kfold, scoring='accuracy')
+        results_accuracy.append(cv_results_accuracy)
+        cv_results_auroc = model_selection.cross_val_score(model,X, y, cv=kfold, scoring='roc_auc')
+        results_auroc.append(cv_results_auroc)
+        cv_results_neg_log_loss = model_selection.cross_val_score(model,X, y, cv=kfold, scoring='neg_log_loss')
+        results_neg_log_loss.append(cv_results_neg_log_loss)
+        cv_results_average_precision = model_selection.cross_val_score(model,X, y, cv=kfold, scoring='average_precision')
+        results_average_precision.append(cv_results_average_precision)
+        names.append(name)
+        
 
+        # report of scores
+        print ("Algorithm :",name)
+        print (" Data clean & scaled CV AUROC mean: ", cv_results_auroc.mean())
+        print (" Data clean & scaled CV accuracy mean: ", cv_results_accuracy.mean())
+        print (" Data clean & scaled CV average_precision mean: ", cv_results_average_precision.mean())
+        print (" Data clean & scaled CV neg_log_loss mean: ", cv_results_neg_log_loss.mean())
+        scores_table[i, 0] = cv_results_auroc.mean()
+        scores_table[i, 1] = cv_results_accuracy.mean()
+        scores_table[i, 2] = cv_results_average_precision.mean()
+        scores_table[i, 3] = cv_results_neg_log_loss.mean()
+        #print('AUROC = ',auroc,', AUPRC = ',auprc,'. Best threshold for ROC = ',threshold[0], ', accuracy is then ',accuracy,'.')
+        print ("--"*30)
+        i = i + 1
+        
+print(scores_table)
+np.savetxt("scores_table.csv", scores_table, delimiter=",")
+```
 
-
+The results are given below:
+<p align="center">
+  <img src="diabetes/Cross_validation_table.png" width="350" alt="accessibility text">
+</p>
