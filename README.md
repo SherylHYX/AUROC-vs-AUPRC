@@ -10,26 +10,24 @@ The diabetes dataset has a total of 768 samples,  268 of which have positive lab
 
 Now we do the random guess classifier analysis. If we are using a random guess classifier, then we will get AUROC = 0.5, AUPRC = 0.35, accuracy less than 0.65. 
 
-### KNN with K = 11
+### KNN with K = 16
 
-The first classifier is KNN with K = 11. The corresponding jupyter notebook file is step-by-step-diabetes-classification-knn-detailed.ipynb. The file edited by Sheryl for KNN(K =11) is diabetes_Sheryl_1019.ipynb, adding PRC curve and AUPRC,  best threshold for ROC, average accuracy, as well as the average precision score.
+The first classifier is KNN with K = 11.The corresponding jupyter notebook file is pima-diabetes-using-logistic-and-knn-84.ipynb. The file edited by Sheryl is pima-diabetes-using-logistic-and-knn-84-Sheryl1020.ipynb, adding PRC curve and AUPRC,  best threshold for ROC, average accuracy, as well as the average precision score.
 
-The KNN model uses risk for validation set to choose K. The scores from the KNN with K = 11 classifier are: AUROC = 0.8215367018771446, AUPRC = 0.6622327480790501. The best threshold is 0.35714285714285715, which is quite close to the proportion of positive data points. With this threshold, the average accuracy is 0.78125. Therefore, the result from the KNN classifier with K = 11 is better than the random guess classifier in all the three scores.
+The scores from the KNN with K = 16 classifier are: AUROC =  0.8721719457013575 , AUPRC =  0.8052043948997956 . Best threshold for ROC =  0.4375 , accuracy is then  0.7922077922077922 .The best threshold is not so close to the proportion of positive data points. Therefore, the result from the KNN classifier with K = 11 is better than the random guess classifier in all the three scores.
 
 
 ​	A visual result for the ROC curve for the KNN classifier  is given in the following figure.
 
 <p align="center">
-  <img src="diabetes/diabetes_ROC_KNN.png" width="350" alt="accessibility text">
+  <img src="diabetes/KNN with K = 16 ROC curve.png" width="350" alt="accessibility text">
 </p>
-*ROC curve for the KNN classifier, with AUROC = 0.8215367018771446*
 	
 ​	A visual result for the PRC curve for the KNN classifier  is given in the following figure.
 
 <p align="center">
-  <img src="diabetes/diabetes_PRC_KNN.png" width="350" alt="accessibility text">
+  <img src="diabetes/KNN with K = 16 PRC curve.png" width="350" alt="accessibility text">
 </p>
-*PRC curve for the KNN classifier, with AUPRC = 0.6622327480790501*
 
 ### Logistic Regression
 
@@ -51,6 +49,26 @@ The scores from this classifier are: AUROC =  0.8399010089472682 , AUPRC =  0.73
   <img src="diabetes/diabetes_PRC_logistic.png" width="350" alt="accessibility text">
 </p>
 
+### KNN with K = 11
+
+The third classifier is KNN with K = 11. The corresponding jupyter notebook file is step-by-step-diabetes-classification-knn-detailed.ipynb. The file edited by Sheryl for KNN(K =11) is diabetes_Sheryl_1019.ipynb, adding PRC curve and AUPRC,  best threshold for ROC, average accuracy, as well as the average precision score.
+
+The KNN model uses risk for validation set to choose K. The scores from the KNN with K = 11 classifier are: AUROC = 0.8215367018771446, AUPRC = 0.6622327480790501. The best threshold is 0.35714285714285715, which is quite close to the proportion of positive data points. With this threshold, the average accuracy is 0.78125. Therefore, the result from the KNN classifier with K = 11 is better than the random guess classifier in all the three scores.
+
+
+​	A visual result for the ROC curve for the KNN classifier  is given in the following figure.
+
+<p align="center">
+  <img src="diabetes/diabetes_ROC_KNN.png" width="350" alt="accessibility text">
+</p>
+*ROC curve for the KNN classifier, with AUROC = 0.8215367018771446*
+	
+​	A visual result for the PRC curve for the KNN classifier  is given in the following figure.
+
+<p align="center">
+  <img src="diabetes/diabetes_PRC_KNN.png" width="350" alt="accessibility text">
+</p>
+*PRC curve for the KNN classifier, with AUPRC = 0.6622327480790501*
 
 
 
