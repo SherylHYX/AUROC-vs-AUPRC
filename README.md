@@ -4,6 +4,8 @@
 
 Sheryl's data set is diabetes.csv, and the competition is from https://www.kaggle.com/uciml/pima-indians-diabetes-database/kernels?sortBy=voteCount&group=everyone&pageSize=20&datasetId=228&outputType=all&turbolinks%5BrestorationIdentifier%5D=26144c10-5644-4852-b3c4-50264072b98a
 
+A useful guide for choosing ML evaluation metrics can be found in the file how-to-choose-right-metric-for-evaluating-ml-model.ipynb.
+
 ### Random Guess Classifier Analysis
 
 The diabetes dataset has a total of 768 samples,  268 of which have positive labels, accounting for a percentage of around 35%. The dimension of the inputs is 8. 
@@ -15,21 +17,51 @@ Now we do the random guess classifier analysis. If we are using a random guess c
 The codes from Sheryl that can generate ROC curve, PRC curve, AUROC, AUPRC, accuracy with best ROC threshold, and save figures as well as give out a numeric report, can be modified from the following:
 
 ```python
-knn = KNeighborsClassifier(16)
-knn.fit(X_train,y_train)
+def Find_Optimal_Cutoff(target, predicted):
+    """ Find the optimal probability cutoff point for a classification model related to event rate
+    Parameters
+    ----------
+    target : Matrix with dependent or target data, where rows are observations
+
+    predicted : Matrix with predicted data, where rows are observations
+
+    Returns
+    -------     
+    list type, with optimal cutoff value
+
+    """
+    fpr, tpr, threshold = roc_curve(target, predicted)
+    i = np.arange(len(tpr)) 
+    roc = pd.DataFrame({'tf' : pd.Series(tpr-(1-fpr), index=i), 'threshold' : pd.Series(threshold, index=i)})
+    roc_t = roc.ix[(roc.tf-0).abs().argsort()[:1]]
+
+    return list(roc_t['threshold']) 
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.33, random_state=444, stratify=y)
+
+pipe2 = Pipeline([
+    ('oversample', SMOTE(random_state=444)),
+    ('clf', LinearDiscriminantAnalysis())])
+
+skf2 = StratifiedKFold(n_splits=10)
+param_grid = {'clf__n_components': [1]}
+grid = GridSearchCV(pipe2, param_grid, return_train_score=False,
+                    n_jobs=-1, scoring="roc_auc", cv=skf2)
+LDA=grid.fit(X_train, y_train)
 from sklearn.metrics import roc_curve
-y_pred_proba =knn.predict_proba(X_test)[:,1]
+y_pred_proba =LDA.predict_proba(X_test)[:,1]
 fpr, tpr, thresholds = roc_curve(y_test, y_pred_proba)
 #Area under ROC curve
 from sklearn.metrics import roc_auc_score
 auroc = roc_auc_score(y_test,y_pred_proba)
 plt.plot([0,1],[0,1],'k--')
-plt.plot(fpr,tpr, label='logistic')
+plt.plot(fpr,tpr, label='LDA')
 plt.xlabel('fpr')
 plt.ylabel('tpr')
-title_name = 'KNN with K = 16 ROC curve, AUROC ='+str(auroc)
+title_name = 'LDA ROC curve, AUROC ='+str(auroc)
 plt.title(title_name)
-plt.savefig('KNN with K = 16 ROC curve.png')
+plt.savefig('LDA ROC curve.png')
 plt.show()
 print('AUROC = ',auroc)
 from sklearn.metrics import precision_recall_curve
@@ -37,12 +69,12 @@ precision, recall, thresholds = precision_recall_curve(y_test,y_pred_proba)
 from sklearn.metrics import auc
 auprc = auc(recall, precision)
 plt.plot([1,0],[0,1],'k--')
-plt.plot(recall,precision, label='logistic')
+plt.plot(recall,precision, label='LDA')
 plt.xlabel('recall')
 plt.ylabel('precision')
-title_name = 'KNN with K = 16 PRC curve, AUPRC ='+str(auprc)
+title_name = 'LDA PRC curve, AUPRC ='+str(auprc)
 plt.title(title_name)
-plt.savefig('KNN with K = 16 PRC curve.png')
+plt.savefig('LDA PRC curve.png')
 plt.show()
 print('AUPRC = ',auprc)
 threshold = Find_Optimal_Cutoff(y_test,y_pred_proba)
@@ -113,6 +145,24 @@ The KNN model uses risk for validation set to choose K. The scores from the KNN 
 </p>
 *PRC curve for the KNN classifier, with AUPRC = 0.6622327480790501*
 
+### Linear Discriminant Analysis(LDA)
+
+The fourth classifier is Linear Discriminant Analysis(LDA). The corresponding jupyter notebook file is a-complete-ml-work-84-roc-auc.ipynb. The file edited by Sheryl is a-complete-ml-work-84-roc-auc-Sheryl1020.ipynb, adding PRC curve and AUPRC,  best threshold for ROC, average accuracy, as well as the average precision score.
+
+The scores from this classifier are: AUROC =  0.8404494382022472 , AUPRC =  0.7040323030097024 . Best threshold for ROC =  0.46555766171966545 , accuracy is then  0.7637795275590551 . The best threshold is not so close to the proportion of positive data points. The result from this classifier is better than the random guess classifier in all the three scores.
+
+
+​	A visual result for the ROC curve for the LDA classifier  is given in the following figure.
+
+<p align="center">
+  <img src="diabetes/LDA ROC curve.png" width="350" alt="accessibility text">
+</p>
+
+​	A visual result for the PRC curve for the LDA classifier  is given in the following figure.
+
+<p align="center">
+  <img src="diabetes/LDA PRC curve.png" width="350" alt="accessibility text">
+</p>
 
 
 
