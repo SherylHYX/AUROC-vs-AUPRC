@@ -1,0 +1,183 @@
+import warnings
+warnings.filterwarnings('ignore')
+import numpy as np
+import pandas as pd
+import scipy.stats as st
+import statsmodels.api as sm
+import matplotlib.pyplot as plt
+
+# Read the data, drop some information, rename columns
+heart_df=pd.read_csv("framingham_heart_disease.csv")
+heart_df.drop(['education'],axis=1,inplace=True)
+heart_df.rename(columns={'male':'Sex_male'},inplace=True)
+
+# Handle the missing data
+count=0
+for i in heart_df.isnull().sum(axis=1):
+    if i>0:
+        count=count+1
+print('Total number of rows with missing values is ', count)
+print('since it is only',round((count/len(heart_df.index))*100), 'percent of the entire dataset the rows with missing values are excluded.')
+heart_df.dropna(axis=0,inplace=True)
+pd.set_option('display.max_columns', 1000)
+pd.set_option('display.width', 1000)
+print(heart_df.describe())
+
+# Add a constant
+from statsmodels.tools import add_constant as add_constant
+heart_df_constant = add_constant(heart_df)
+heart_df_constant.head()
+
+# Choose features we need to use
+st.chisqprob = lambda chisq, df: st.chi2.sf(chisq, df)
+cols = heart_df_constant.columns[:-1]
+model = sm.Logit(heart_df.TenYearCHD,heart_df_constant[cols])
+result = model.fit()
+print(result.summary())
+
+# Define back_feature_selection
+def back_feature_elem (data_frame,dep_var,col_list):
+    while len(col_list)>0 :
+        model = sm.Logit(dep_var,data_frame[col_list])
+        result = model.fit(disp=0)
+        largest_pvalue = round(result.pvalues,3).nlargest(1)
+        if largest_pvalue[0]<(0.05):
+            return result
+            break
+        else:
+            col_list=col_list.drop(largest_pvalue.index)
+
+# Use back_feature_selection to select features, if p > 0.05, we delete the feature
+result=back_feature_elem(heart_df_constant,heart_df.TenYearCHD,cols)
+
+#Interpreting the results: Odds Ratio, Confidence Intervals and Pvalues
+params = np.exp(result.params)
+conf = np.exp(result.conf_int())
+conf['OR'] = params
+pvalue=round(result.pvalues,3)
+conf['pvalue']=pvalue
+conf.columns = ['CI 95%(2.5%)', 'CI 95%(97.5%)', 'Odds Ratio','pvalue']
+print (conf)
+
+# Split training data and testing data
+new_features=heart_df[['age','Sex_male','cigsPerDay','totChol','sysBP','glucose','TenYearCHD']]
+x = new_features.iloc[:,:-1]
+y = new_features.iloc[:,-1]
+from sklearn.model_selection import train_test_split
+x_train,x_test,y_train,y_test = train_test_split(x,y,test_size=.20,random_state=5)
+
+# Create a list to show the Acc, AUROC and AUPRC for different classifiers
+table = pd.DataFrame(index=["Logistic Regression","SVM","KNN","Naive Bayes","Desicion Tree","Random Forest"], columns=["AUROC", "AUPRC", "ACC"])
+
+# Fit the model and predict y with it
+from sklearn.linear_model import LogisticRegression
+logreg = LogisticRegression()
+log_y_score = logreg.fit(x_train, y_train).decision_function(x_test)
+log_y_pred = logreg.predict(x_test)
+
+from sklearn import svm
+SvM = svm.SVC()
+SVM_y_score = SvM.fit(x_train, y_train).decision_function(x_test)
+SVM_y_pred = SvM.predict(x_test)
+
+from sklearn.neighbors import KNeighborsClassifier
+neigh = KNeighborsClassifier(n_neighbors=10)
+KNN_y_score = neigh.fit(x_train, y_train).predict_proba(x_test)[:, 1]
+KNN_y_pred = neigh.predict(x_test)
+
+from sklearn.naive_bayes import GaussianNB
+gnb = GaussianNB()
+NB_y_score = gnb.fit(x_train, y_train).predict_proba(x_test)[:, 1]
+NB_y_pred = gnb.predict(x_test)
+
+from sklearn import tree
+dt = tree.DecisionTreeClassifier()
+DT_y_score = dt.fit(x_train, y_train).predict_proba(x_test)[:, 1]
+DT_y_pred = dt.predict(x_test)
+
+
+from sklearn.ensemble import RandomForestClassifier
+rf = RandomForestClassifier(n_estimators=100, max_depth=2, random_state=0)
+RF_y_score = rf.fit(x_train, y_train).predict_proba(x_test)[:, 1]
+RF_y_pred = rf.predict(x_test)
+
+# AUROC
+from sklearn.metrics import roc_auc_score
+log_AUROC = roc_auc_score(y_test,log_y_score)
+table.values[0][0] = log_AUROC
+
+SVM_AUROC = roc_auc_score(y_test,SVM_y_score)
+table.values[1][0] = SVM_AUROC
+
+KNN_AUROC = roc_auc_score(y_test,KNN_y_score)
+table.values[2][0] = KNN_AUROC
+
+NB_AUROC = roc_auc_score(y_test,NB_y_score)
+table.values[3][0] = NB_AUROC
+
+DT_AUROC = roc_auc_score(y_test,DT_y_score)
+table.values[4][0] = DT_AUROC
+
+RF_AUROC = roc_auc_score(y_test,RF_y_score)
+table.values[5][0] = RF_AUROC
+
+# AUPRC
+from sklearn.metrics import average_precision_score
+log_AUPRC = average_precision_score(y_test,log_y_score)
+table.values[0][1] = log_AUPRC
+SVM_AUPRC = average_precision_score(y_test,SVM_y_score)
+table.values[1][1] = SVM_AUPRC
+KNN_AUPRC = average_precision_score(y_test,KNN_y_score)
+table.values[2][1] = KNN_AUPRC
+NB_AUPRC = average_precision_score(y_test,NB_y_score)
+table.values[3][1] = NB_AUPRC
+DT_AUPRC = average_precision_score(y_test,DT_y_score)
+table.values[4][1] = DT_AUPRC
+RF_AUPRC = average_precision_score(y_test,RF_y_score)
+table.values[5][1] = RF_AUPRC
+
+# Model accuracy
+from sklearn.metrics import accuracy_score
+log_Acc = accuracy_score(y_test, log_y_pred)
+table.values[0][2] = log_Acc
+SVM_Acc = accuracy_score(y_test, SVM_y_pred)
+table.values[1][2] = SVM_Acc
+KNN_Acc = accuracy_score(y_test, KNN_y_pred)
+table.values[2][2] = KNN_Acc
+NB_Acc = accuracy_score(y_test, NB_y_pred)
+table.values[3][2] = NB_Acc
+DT_Acc = accuracy_score(y_test, DT_y_pred)
+table.values[4][2] = DT_Acc
+RF_Acc = accuracy_score(y_test, RF_y_pred)
+table.values[5][2] = RF_Acc
+
+# Show the conclu table
+print(table.head(5))
+
+# Plot
+from sklearn.metrics import roc_curve
+y_pred_proba = RF_y_score ###############
+fpr, tpr, thresholds = roc_curve(y_test, y_pred_proba)
+#Area under ROC curve
+from sklearn.metrics import roc_auc_score
+auroc = roc_auc_score(y_test,y_pred_proba)
+plt.plot([0,1],[0,1],'k--')
+plt.plot(fpr,tpr, label='RF') ##############
+plt.xlabel('fpr')
+plt.ylabel('tpr')
+title_name = 'RF ROC curve, AUROC ='+str(auroc) ############
+plt.title(title_name)
+plt.savefig('RF ROC curve.png') ####################
+plt.show()
+from sklearn.metrics import precision_recall_curve
+precision, recall, thresholds = precision_recall_curve(y_test,y_pred_proba)
+from sklearn.metrics import auc
+auprc = auc(recall, precision)
+plt.plot([1,0],[0,1],'k--')
+plt.plot(recall,precision, label='RF') ####################
+plt.xlabel('recall')
+plt.ylabel('precision')
+title_name = 'RF PRC curve, AUPRC ='+str(auprc) ###############
+plt.title(title_name)
+plt.savefig('RF PRC curve.png') #######################
+plt.show()
