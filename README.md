@@ -6,6 +6,8 @@ Sheryl's data set is diabetes.csv, and the competition is from https://www.kaggl
 
 A useful guide for choosing ML evaluation metrics can be found in the file how-to-choose-right-metric-for-evaluating-ml-model.ipynb.
 
+The main codes can be found from the file diabetes_Sheryl_20200117.ipynb.
+
 ### Random Guess Classifier Analysis
 
 The diabetes dataset has a total of 768 samples,  268 of which have positive labels, accounting for a percentage of around 35%. The dimension of the inputs is 8. 
