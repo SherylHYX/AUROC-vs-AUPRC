@@ -1,9 +1,0 @@
-classifier\measure,AUROC,AUPRC,accuracy_best_threshold,accuracy,average_precision,f1,log_loss_score,recall
-LogisticRegression,0.82,0.70,0.75,0.78,0.58,0.65,-7.48,0.57
-LinearDiscriminantAnalysis,0.82,0.70,0.77,0.78,0.57,0.64,-7.61,0.56
-KNeighborsClassifier,0.75,0.60,0.74,0.74,0.51,0.60,-9.11,0.56
-DecisionTreeClassifier,0.64,0.61,0.65,0.68,0.45,0.53,-11.15,0.52
-GaussianNB,0.81,0.66,0.76,0.78,0.58,0.67,-7.48,0.62
-RandomForestClassifier,0.80,0.65,0.73,0.74,0.50,0.55,-9.11,0.46
-AdaBoostClassifier,0.78,0.63,0.70,0.76,0.54,0.62,-8.43,0.57
-RandomGuess,0.50,0.35,0.65,0.65,0.35,,,
