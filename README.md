@@ -1,12 +1,28 @@
 # AUROC-vs-AUPRC
 
-## Diabetes -- Sheryl
+This project contains both real-data analysis and simulated data analysis for comparing performance measures in binary classification problems.
+
+The main files we use to generate the results in the report are:
+
+1) /diabetes by Sheryl/diabetes_Sheryl_20200203.ipynb
+
+2) /cardio/cardio.ipynb
+
+3) /heart_disease/heart_disease-Sheryl.ipynb
+
+4) /pulsar_star/pulsar_star.ipynb
+
+5) /simulations with LDA and Bayes only/simulations_Sheryl_20200304.ipynb
+
+More details about how these codes work can be found in the report.
+
+## An Example of Real-data analysis: Diabetes
 
 Sheryl's data set is diabetes.csv, and the competition is from https://www.kaggle.com/uciml/pima-indians-diabetes-database/kernels?sortBy=voteCount&group=everyone&pageSize=20&datasetId=228&outputType=all&turbolinks%5BrestorationIdentifier%5D=26144c10-5644-4852-b3c4-50264072b98a
 
 A useful guide for choosing ML evaluation metrics can be found in the file how-to-choose-right-metric-for-evaluating-ml-model.ipynb.
 
-The main codes can be found from the file diabetes_Sheryl_20200117.ipynb.
+The main codes can be found from the file diabetes_Sheryl_20200203.ipynb.
 
 ### Random Guess Classifier Analysis
 
@@ -16,7 +32,7 @@ Now we do the random guess classifier analysis. If we are using a random guess c
 
 ## Batch Comparison
 
-In fact, average precision is NOT the same as AUPRC, and the accuracy calculated after selecting the best threshold under AUROC may NOT be as good as the accuracy given by the prediction of the baseline models. The codes for this is in diabetes_Sheryl_1024.ipynb, which is a completely new file written by Sheryl from scratch. The most important part of the file that gives the comparison table is the following:
+In fact, average precision is NOT the same as AUPRC, and the accuracy calculated after selecting the best threshold under AUROC may NOT be as good as the accuracy given by the prediction of the baseline models. The codes for this is in diabetes_Sheryl_20200203.ipynb, which is a completely new file written by Sheryl from scratch. The most important part of the file that gives the comparison table is the following:
 
 ```python
 from sklearn.metrics import roc_auc_score, average_precision_score, f1_score, log_loss, recall_score, precision_recall_curve, auc
@@ -26,11 +42,12 @@ models = [] # Here I will append all the algorithms that I will use. Each one wi
 models.append(('LR', LogisticRegression())) 
 models.append(('LDA', LinearDiscriminantAnalysis()))
 models.append(('KNN', KNeighborsClassifier()))
-models.append(('CART', DecisionTreeClassifier()))
 models.append(('NB', GaussianNB()))
 models.append(('RF', RandomForestClassifier()))
-models.append(('AdaBoost', AdaBoostClassifier()))
+models.append(('DecisionTree', DecisionTreeClassifier(random_state=42)))
+models.append(('SVM',SVC(random_state=42,probability=True)))
 
+test_ratio = y_test.sum()/len(y_test)
 # compare different classifiers
 results_accuracy=[]
 results_auroc=[]
@@ -45,8 +62,8 @@ thresholds_roc_full = []
 precision_full = []
 recall_full = []
 thresholds_prc_full = []
-measures = ['AUROC','AUPRC','accuracy_best_threshold','accuracy','average_precision','f1','log_loss_score','recall']
-scores_table = np.zeros([8,8])
+measures = ['AUROC','AUPRC','accuracy','log loss','F1']
+scores_table = np.zeros([8,5])
 roc_cut = np.zeros([8,]).astype(int) # cut points for fpr, tpr, thresholds for ROC curve of each model
 prc_cut = np.zeros([8,]).astype(int) # cut points for precision, recall, thresholds for PRC curve of each model
 i = 0 # looping index
@@ -67,9 +84,6 @@ for name, model in models:
         # area under PRC curve
         auprc = auc(recall, precision)
 
-        threshold = Find_Optimal_Cutoff(y_test,y_pred_proba)
-        y_pred = y_pred_proba>threshold
-        accuracy_best_threshold = accuracy_score(y_test, y_pred)
         accuracy = accuracy_score(y_test, model.predict(X_test))
         average_precision = average_precision_score(y_test, model.predict(X_test))
         f1 = f1_score(y_test, model.predict(X_test))
@@ -81,51 +95,48 @@ for name, model in models:
         # report of scores
         scores_table[i, 0] = auroc
         scores_table[i, 1] = auprc
-        scores_table[i, 2] = accuracy_best_threshold
-        scores_table[i, 3] = accuracy
-        scores_table[i, 4] = average_precision
-        scores_table[i, 5] = f1
-        scores_table[i, 6] = -log_loss_score
-        scores_table[i, 7] = recall
-        print(name,': AUROC = {:.3f}, AUPRC = {:.3f}, average precision = {:.3f}, '.format(auroc,auprc,average_precision),
-              '. \nBest threshold for ROC = {:.3f},'.format(threshold[0]), 'accuracy for the best ROC threshold is then {:.3f},'
-              .format(accuracy_best_threshold),'accuracy = {:.3f}.'.format(accuracy),
-              '\nF1 score = {:.3f},'.format(f1), 'log loss = {:.3f},'.format(log_loss_score),'recall = {:.3f}.'.format(recall))
+        scores_table[i, 2] = accuracy
+        scores_table[i, 3] = log_loss_score
+        scores_table[i, 4] = f1
+
+        print(name,': AUROC = {:.3f}, AUPRC = {:.3f}, '.format(auroc,auprc),
+              '. \nAccuracy = {:.3f}, log loss = {:.3f},'.format(accuracy, log_loss_score))
         print ("--"*30)
         i = i + 1
-    
 
-scores_table[7, 0] = 0.5 # random guess
-scores_table[7, 1] = ratio # random guess   
+scores_table[5, 0] = 0.5 # random guess
+scores_table[5, 1] = test_ratio # random guess   
 #plot ROC
 plt.plot([0,1],[0,1],'k--')
 for i in range(7):
     plt.plot(fpr_full[roc_cut[i]:roc_cut[i + 1]],tpr_full[roc_cut[i]:roc_cut[i + 1]], label=name)
 plt.xlabel('fpr')
 plt.ylabel('tpr')
-title_name = 'diabetes ROC curve'
+title_name = 'ROC curve for diabetes'
 plt.title(title_name)
-plt.legend(['random guess','LR', 'LDA','KNN','CART','NB','RF','AdaBoost'])
-save_name = 'diabetes ROC curve.png'
+plt.legend(['random guess','Logistic Regression', 'LDA','KNN','Naive Bayes','Random Forest','Decision Tree','SVM'])
+save_name = 'diabetes_ROC_curve.png'
 plt.savefig(save_name)
 plt.show()
 
 # plot PRC
-plt.axhline(y=ratio, xmin=0, xmax=1,color='k', linestyle = '--')
+plt.axhline(y=test_ratio, xmin=0, xmax=1,color='k', linestyle = '--')
 for i in range(7):
     plt.plot(recall_full[prc_cut[i]:prc_cut[i + 1]],precision_full[prc_cut[i]:prc_cut[i + 1]], label=name)
 plt.xlabel('recall')
 plt.ylabel('precision')
-title_name = 'diabetes PRC curve'
+title_name = 'Precision-Recall curve for diabetes'
 plt.title(title_name)
-plt.legend(['random guess','LR', 'LDA','KNN','CART','NB','RF','AdaBoost'])
-save_name = 'diabetes PRC curve.png'
+plt.legend(['random guess','Logistic Regression', 'LDA','KNN','Naive Bayes','Random Forest','Decision Tree','SVM'])
+save_name = 'diabetes_PRcurve.png'
 plt.savefig(save_name)
 plt.show()
 
-for i in range(8):
-    print('The best model measured by ',measures[i],'is ',names[np.argmax(scores_table[:7,i])]) 
-csv_name = 'diabetes.csv'
+for i in range(5):
+    print('The best model measured by ',measures[i],'is ',names[np.argmax(scores_table[:5,i])]) 
+print ("--"*30)
+print ("--"*30)
+csv_name ='diabetes_scores.csv'
 np.savetxt(csv_name, scores_table, delimiter=",")
 ```
 ## Batch Comparison
