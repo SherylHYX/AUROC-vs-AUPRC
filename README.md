@@ -227,9 +227,6 @@ X_train, X_test, y_train, y_test = train_test_split(
 ## Batch Comparison Result
 The results are given below:
 
-<p align="center">
-  <img src="diabete/diabetes_table.png" width="550" alt="accessibility text">
-</p>
 
 <p align="center">
   <img src="diabetes/diabetes ROC curve.png" width="550" alt="accessibility text">
@@ -242,7 +239,7 @@ The results are given below:
 </p>
 
 
-From the table and comparing graphs, we can see that AUROC for different classifiers may not differ much, but  AUPRC tells more difference. 
+From the data in the .csv file and comparing graphs, we can see that AUROC for different classifiers may not differ much, but  AUPRC tells more difference. 
 
 The best model measured by  AUROC and accuracy_best_threshold(by ROC) is LDA. The best model measured by  AUPRC, accuracy, and log_loss_score  is  LR. The best model measured by  average_precision, f1, and recall is  NB. 
 
