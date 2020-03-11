@@ -4,15 +4,15 @@ This project contains both real-data analysis and simulated data analysis for co
 
 The main files we use to generate the results in the report are:
 
-1) /diabetes by Sheryl/diabetes_Sheryl_20200203.ipynb
+1) /diabetes/diabetes.ipynb
 
 2) /cardio/cardio.ipynb
 
-3) /heart_disease/heart_disease-Sheryl.ipynb
+3) /heart_disease/heart_disease.ipynb
 
 4) /pulsar_star/pulsar_star.ipynb
 
-5) /simulations with LDA and Bayes only/simulations_Sheryl_20200304.ipynb
+5) /simulations with LDA and Bayes only/simulations.ipynb
 
 More details about how these codes work can be found in the report.
 
@@ -20,9 +20,7 @@ More details about how these codes work can be found in the report.
 
 Sheryl's data set is diabetes.csv, and the competition is from https://www.kaggle.com/uciml/pima-indians-diabetes-database/kernels?sortBy=voteCount&group=everyone&pageSize=20&datasetId=228&outputType=all&turbolinks%5BrestorationIdentifier%5D=26144c10-5644-4852-b3c4-50264072b98a
 
-A useful guide for choosing ML evaluation metrics can be found in the file how-to-choose-right-metric-for-evaluating-ml-model.ipynb.
-
-The main codes can be found from the file diabetes_Sheryl_20200203.ipynb.
+The main codes can be found from the file diabetes.ipynb.
 
 ### Random Guess Classifier Analysis
 
@@ -32,7 +30,7 @@ Now we do the random guess classifier analysis. If we are using a random guess c
 
 ## Batch Comparison
 
-In fact, average precision is NOT the same as AUPRC, and the accuracy calculated after selecting the best threshold under AUROC may NOT be as good as the accuracy given by the prediction of the baseline models. The codes for this is in diabetes_Sheryl_20200203.ipynb, which is a completely new file written by Sheryl from scratch. The most important part of the file that gives the comparison table is the following:
+In fact, average precision is NOT the same as AUPRC, and the accuracy calculated after selecting the best threshold under AUROC may NOT be as good as the accuracy given by the prediction of the baseline models. The codes for this is in diabetes.ipynb, which is a completely new file written by Sheryl from scratch. The most important part of the file that gives the comparison table is the following:
 
 ```python
 from sklearn.metrics import roc_auc_score, average_precision_score, f1_score, log_loss, recall_score, precision_recall_curve, auc
@@ -230,18 +228,19 @@ X_train, X_test, y_train, y_test = train_test_split(
 The results are given below:
 
 <p align="center">
-  <img src="diabetes by Sheryl/diabetes_table.png" width="550" alt="accessibility text">
+  <img src="diabete/diabetes_table.png" width="550" alt="accessibility text">
 </p>
 
 <p align="center">
-  <img src="diabetes by Sheryl/diabetes ROC curve.png" width="550" alt="accessibility text">
+  <img src="diabetes/diabetes ROC curve.png" width="550" alt="accessibility text">
 </p>
 
 
 
 <p align="center">
-  <img src="diabetes by Sheryl/diabetes PRC curve.png" width="550" alt="accessibility text">
+  <img src="diabetes/diabetes PRC curve.png" width="550" alt="accessibility text">
 </p>
+
 
 From the table and comparing graphs, we can see that AUROC for different classifiers may not differ much, but  AUPRC tells more difference. 
 
